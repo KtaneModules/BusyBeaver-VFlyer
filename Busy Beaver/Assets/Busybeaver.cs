@@ -158,17 +158,20 @@ public class Busybeaver : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		if (S == SubStage && !Submission){
+
+		 if (S < Bomb.GetSolvedModuleNames().Where(a => !ignoredModules.Contains(a)).Count() && !solved && echo >= 300)
+        {
+            S++;
+			if (S == SubStage && !Submission){
 			Debug.LogFormat("[Busy Beaver #{0}]: Its time to input. Here we go.",_moduleId);
 			Text[0].text = "--";
 			Text[1].text = "SUB";
 			Submission = true;
 		}
-		 else if (S < Bomb.GetSolvedModuleNames().Where(a => !ignoredModules.Contains(a)).Count() && !solved && echo >= 300)
-        {
-            S++;
+			else{
             StageGeneration();
 			echo = 0;
+			}
         }
 		else{
 			echo++;
@@ -195,4 +198,38 @@ public class Busybeaver : MonoBehaviour {
             return num;
         }
 	}
+	#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} submit 1101001010 (Sets the binary to 1101001010, then submits.)";
+	#pragma warning restore 414
+	IEnumerator ProcessTwitchCommand(string command)
+    {
+        Match m;
+        if ((m = Regex.Match(command, @"^\s*submit\s+([01 ])+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
+        {    
+            var Binary = m.Groups[1].Value.ToList();
+			Debug.Log(Binary.Join(", "));
+            if(Binary.Length != 10)
+              yield return "sendtochaterror Incorrect Syntax. Must be exactly 10 digits.";
+            yield return null;  // acknowledge to TP that the command was valid
+
+            for (int i = 0; i < 10; i++)
+            {
+                if(Text[i+2].text!=Binary[i].ToString())
+                    Buttons[i].OnInteract();
+                yield return new WaitForSeconds(.1f);
+            }
+            Buttons[10].OnInteract();
+        }
+    }
+	IEnumerator TwitchHandleForcedSolve()
+    {
+		while (!Submission) //Wait until submission time
+            yield return true;
+		for(int i=0;i<10;i++){
+		if(Text[i+2].text!=I[i].ToString())
+			Buttons[i].OnInteract();
+		yield return new WaitForSeconds(.1f);
+		}
+		Buttons[10].OnInteract();
+    }
 }
