@@ -11,15 +11,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 615501dbe4f3fe94fbf4b564abb10237, type: 3}
   m_Name: ModConfig
   m_EditorClassIdentifier: 
-  id: busyBeaver
-  title: Busy Beaver
-  author: Cooldoom5
-  description: '<placeholder>
+  id: busyBeaverMod
+  title: Busy Beaver [REUPLOAD]
+  author: VFlyer, Cooldoom 5
+  description: 'Turing''s been busy.
+
+    [b]This is a reupload of the original module. Please unsubscribe/disable the module
+    here.[/b]
 
 
     Module ID: busyBeaver
 
-    Manual: NO'
-  version: 1
-  outputFolder: E:\Setam\steamapps\common\Keep Talking And Noboty Explodes\mods
+    Manual: https://ktane.timwi.de/HTML/Busy%20Beaver.html'
+  version: 1.0_1
+  outputFolder: build
   previewImage: {fileID: 2800000, guid: 9aab404b008a5fd488751e30a7da4b0a, type: 3}

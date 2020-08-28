@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: WorkshopItem
   m_EditorClassIdentifier: 
   WorkshopPublishedFileID: 2010802460
-  Title: Directional Button
+  Title: Busy Beaver
   Tags:
   - Regular Module
