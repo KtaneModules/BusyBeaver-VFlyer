@@ -120,14 +120,14 @@ public class Busybeaver : MonoBehaviour {
 			Buttons[x].OnInteract += delegate {
 				kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Buttons[y].transform);
 				kmAudio.PlaySoundAtTransform("tick", Buttons[y].transform);
-				Buttons[y].AddInteractionPunch(0.5f);
+				Buttons[y].AddInteractionPunch(0.1f);
 				TogglePos(y);
 				return false;
 			};
         }
 		submitBtn.OnInteract += delegate {
 			kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, submitBtn.transform);
-			submitBtn.AddInteractionPunch(0.1f);
+			submitBtn.AddInteractionPunch(1f);
 			ProcessSubmission();
 			return false;
 		};
