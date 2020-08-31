@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 using System.Text.RegularExpressions;
 using Rnd = UnityEngine.Random;
+using Newtonsoft.Json;
 
 public class Busybeaver : MonoBehaviour {
 	
@@ -23,6 +24,8 @@ public class Busybeaver : MonoBehaviour {
 	private const string Alphabet = "QWERTYUIOPASDFGHJKLZXCVBNM";
 	private int stageNo, position, stagesGeneratable, cStage = -1;
 	private bool solved = false;
+
+	public bool debugTape;
 
 	private bool[] correctStates = new bool[10], inputStates = new bool[10];
 	List<bool[]> displayStates = new List<bool[]>();
@@ -91,7 +94,7 @@ public class Busybeaver : MonoBehaviour {
 			stagesGeneratable = Bomb.GetSolvableModuleNames().Count(a => !ignoredModules.Contains(a)) - 1;
 			if (stagesGeneratable <= 0)
 			{
-				Debug.LogFormat("[Busy Beaver #{0}]: There are no non-ignored modules. The module will enter a special state for this.", _moduleId);
+				Debug.LogFormat("[Busy Beaver #{0}]: There are insufficient non-ignored modules. The module will enter a special state for this.", _moduleId);
 				inSpecial = true;
 				stagesGeneratable = 10;
 
@@ -111,7 +114,7 @@ public class Busybeaver : MonoBehaviour {
             }
 
 		};
-		for (int x=0;x<Buttons.Length;x++)
+        for (int x = 0; x < Buttons.Length; x++)
         {
             int y = x;
 			Buttons[x].OnInteract += delegate {
@@ -131,6 +134,11 @@ public class Busybeaver : MonoBehaviour {
 
 		displayText.text = "";
 		progressText.text = "";
+		for (int y = 0; y < bitsRenderer.Length; y++)
+		{
+			bitsRenderer[y].material = disableState;
+			colorblindText[y].text = "";
+		}
 	}
 	void TogglePos(int idx)
     {
@@ -160,7 +168,7 @@ public class Busybeaver : MonoBehaviour {
         {
 			if (correctStates.SequenceEqual(inputStates))
             {
-				Debug.LogFormat("[Busy Beaver #{0}]: Correct tape submitted.", _moduleId);
+				Debug.LogFormat("[Busy Beaver #{0}]: Correct tape submitted. Module passed.", _moduleId);
 				Module.HandlePass();
 				StartCoroutine(AnimateDisarmState());
 				solved = true;
@@ -173,6 +181,7 @@ public class Busybeaver : MonoBehaviour {
 					StopCoroutine(currentMercyAnim);
 				currentMercyAnim = HandleMercyReveal();
 				StartCoroutine(currentMercyAnim);
+				kmAudio.PlaySoundAtTransform("strike", transform);
 			}
         }
 		else if (inSpecial)
@@ -252,27 +261,27 @@ public class Busybeaver : MonoBehaviour {
 		Debug.LogFormat("[Busy Beaver #{0}]:-----------INITIAL STATE-----------", _moduleId);
 		Debug.LogFormat("[Busy Beaver #{0}]: Starting Tape: {1}", _moduleId, correctStates.Select(a => a ? "1" : "0").Join(""));
 		Debug.LogFormat("[Busy Beaver #{0}]: Starting Pointer Position: {1}", _moduleId, position + 1);
-		Debug.LogFormat("[Busy Beaver #{0}]:-----------------------------------", _moduleId, stageNo);
+		Debug.LogFormat("[Busy Beaver #{0}]:-----------------------------------", _moduleId);
 		for (int x = 0; x < Math.Min(assignLetters.Length, movementLetters.Length); x++)
         {
 			stageNo++;
 			Debug.LogFormat("[Busy Beaver #{0}]:-----------STAGE {1}-----------", _moduleId, stageNo);
 			Debug.LogFormat("[Busy Beaver #{0}]: Characters displayed in this stage: \"{1}{2}\"", _moduleId, assignLetters[x], movementLetters[x]);
-			bool stateModifer = IsProvidedConditionTrue(assignLetters[x]), movementModifer = IsProvidedConditionTrue(movementLetters[x]);
+			bool stateModifer = IsProvidedConditionTrue(assignLetters[x]), moveLeft = IsProvidedConditionTrue(movementLetters[x]);
 			Debug.LogFormat("[Busy Beaver #{0}]: The left character's condition returned {1}", _moduleId, stateModifer);
 			correctStates[position] = stateModifer;
 			Debug.LogFormat("[Busy Beaver #{0}]: Current Tape: {1}", _moduleId, correctStates.Select(a => a ? "1" : "0").Join(""));
-			Debug.LogFormat("[Busy Beaver #{0}]: The right character's condition returned {1}", _moduleId, movementModifer);
-			position = Mod(position + (movementModifer ? 1 : -1), 10);
+			Debug.LogFormat("[Busy Beaver #{0}]: The right character's condition returned {1}", _moduleId, moveLeft);
+			position = Mod(position + (moveLeft ? -1 : 1), 10);
 			Debug.LogFormat("[Busy Beaver #{0}]: Current Pointer Position: {1}", _moduleId, position + 1);
-			if (stageNo <= Math.Min(5, Math.Min(assignLetters.Length, movementLetters.Length) / 2) || Application.isEditor)
-            {
+			if (stageNo <= Math.Min(5, Math.Min(assignLetters.Length, movementLetters.Length) / 2) || debugTape)
+			{// Check if 5 or more stages have not gone through or half as many stages did not went through already or this is being run in the Unity Editor
 				displayStates.Add(correctStates.ToArray());
 				displayPositions.Add(position);
             }
-			Debug.LogFormat("[Busy Beaver #{0}]:-------------------------------", _moduleId, stageNo);
+			Debug.LogFormat("[Busy Beaver #{0}]:-------------------------------", _moduleId);
 		}
-		Debug.LogFormat("[Busy Beaver #{0}]: Tape to submit: {1}", _moduleId, correctStates.Select(a => a ? "1" : "0").Join(""));
+		Debug.LogFormat("[Busy Beaver #{0}]: Correct Tape to submit: {1}", _moduleId, correctStates.Select(a => a ? "1" : "0").Join(""));
 	}
 	void DisplayCurrentStage()
     {
@@ -288,15 +297,20 @@ public class Busybeaver : MonoBehaviour {
 		}
 		if (cStage < displayStates.Count)
 		{
-			for (int x = 0; x < bitsRenderer.Length; x++)
-            {
-				bitsRenderer[x].material = displayStates[cStage][x] ? bitStates[1] : bitStates[0];
-				colorblindText[x].text = displayStates[cStage][x] ? "1" : "0";
-				colorblindText[x].color = displayStates[cStage][x] ? Color.black : Color.white;
-			}
-			for (int x = 0; x < positionRenderer.Length; x++)
+				for (int x = 0; x < bitsRenderer.Length; x++)
+				{
+					bitsRenderer[x].material = displayStates[cStage][x] ? bitStates[1] : bitStates[0];
+					colorblindText[x].text = displayStates[cStage][x] ? "1" : "0";
+					colorblindText[x].color = displayStates[cStage][x] ? Color.black : Color.white;
+				}
+				for (int x = 0; x < positionRenderer.Length; x++)
+				{
+					positionRenderer[x].material = displayPositions[cStage] == x ? bitStates[1] : bitStates[0];
+				}
+			if (cStage > 0)
 			{
-				positionRenderer[x].material = displayPositions[cStage] == x ? bitStates[1] : bitStates[0];
+				StartCoroutine(AnimateBlendToNextStatesVisible(displayStates[cStage - 1], displayStates[cStage]));
+				StartCoroutine(AnimateBlendToNextPos(displayPositions[cStage - 1], displayPositions[cStage]));
 			}
 		}
 		else
@@ -310,10 +324,97 @@ public class Busybeaver : MonoBehaviour {
 			{
 				positionRenderer[x].material = disableState;
 			}
+			if (cStage - 1 < displayStates.Count)
+            {
+				StartCoroutine(AnimateDisableStates(displayStates[cStage - 1]));
+				StartCoroutine(AnimateDisablePosition(displayPositions[cStage - 1]));
+				kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.LightBuzzShort, transform);
+			}
+		}
+	}
+	int CountCorrect()
+    {
+		int output = 0;
+		for (int x = 0; x < inputStates.Length; x++)
+        {
+			output += inputStates[x] == correctStates[x] ? 1 : 0;
+        }
+		return output;
+    }
+	IEnumerator AnimateBlendToNextStatesVisible(bool[] previousState, bool[] nextState)
+    {
+		bool[] canChange = new bool[Math.Min(previousState.Length, nextState.Length)];
+        for (int x = 0; x < Math.Min(previousState.Length, nextState.Length); x++)
+        {
+			canChange[x] = previousState[x] != nextState[x];
+        }
+		if (!canChange.ToList().TrueForAll(a => !a))
+		for (float x = 0; x <= 1f; x = Math.Min(x + 10 * Time.deltaTime, 1f))
+        {
+            for (int y = 0; y < canChange.Length; y++)
+            {
+				if (canChange[y] && bitsRenderer[y].material.HasProperty("_Blend"))
+					bitsRenderer[y].material.SetFloat("_Blend", 1f - x);
+            }
+			if (x == 1f) break;
+			yield return new WaitForSeconds(Time.deltaTime);
+        }
+		yield return null;
+    }
+	IEnumerator AnimateBlendToNextPos(int originalPos,int newPos)
+    {
+		if (originalPos == newPos) yield break;
+
+		bool[] canChange = new bool[10];
+		for (int x = 0; x < canChange.Length; x++)
+		{
+			canChange[x] = x == originalPos || x == newPos;
+		}
+		for (float x = 0; x <= 1f; x = Math.Min(x + 10 * Time.deltaTime, 1f))
+		{
+			for (int y = 0; y < positionRenderer.Length; y++)
+			{
+				if (canChange[y] && positionRenderer[y].material.HasProperty("_Blend"))
+					positionRenderer[y].material.SetFloat("_Blend", 1f - x);
+			}
+			if (x == 1f) break;
+			yield return new WaitForSeconds(Time.deltaTime);
+		}
+		yield return null;
+    }
+	float[] flickerTimings = { 0.1f, 0.5f, 0.1f, 0.2f, 0.1f };
+	IEnumerator AnimateDisableStates(bool[] previousStates)
+    {
+        for (int x = 0; x < flickerTimings.Length; x++)
+		{
+			for (int y = 0; y < previousStates.Length; y++)
+			{
+				bitsRenderer[y].material = x % 2 == 0 ? disableState : previousStates[y] ? bitStates[1] : bitStates[0];
+				colorblindText[y].text = x % 2 == 0 ? "" : previousStates[y] ? "1" : "0";
+				colorblindText[y].color = previousStates[y] ? Color.black : Color.white;
+			}
+			yield return new WaitForSeconds(flickerTimings[x]);
+		}
+	}
+	IEnumerator AnimateDisablePosition(int previousPosition)
+	{
+		for (int x = 0; x < flickerTimings.Length; x++)
+		{
+			for (int y = 0; y < positionRenderer.Length; y++)
+			{
+				positionRenderer[y].material = x % 2 == 0 ? disableState : y == previousPosition ? bitStates[1] : bitStates[0];
+			}
+			yield return new WaitForSeconds(flickerTimings[x]);
 		}
 	}
 	IEnumerator HandleMercyReveal()
     {
+		displayText.text = string.Format("{0} C", CountCorrect());
+		for (int x = 0; x <= 4; x++)
+		{
+			displayText.color = x % 2 == 0 ? Color.white : Color.red;
+			yield return new WaitForSeconds(0.2f);
+		}
 		for (int z = 0; z < 1 + movementLetters.Length; z++)
 		{
 			if (z > 0)
@@ -338,6 +439,11 @@ public class Busybeaver : MonoBehaviour {
 				{
 					positionRenderer[x].material = displayPositions[z] == x ? bitStates[1] : bitStates[0];
 				}
+				if (z > 0)
+                {
+					StartCoroutine(AnimateBlendToNextPos(displayPositions[z - 1], displayPositions[z]));
+					StartCoroutine(AnimateBlendToNextStatesVisible(displayStates[z - 1], displayStates[z]));
+				}
 			}
 			else
 			{
@@ -350,8 +456,14 @@ public class Busybeaver : MonoBehaviour {
 				{
 					positionRenderer[x].material = disableState;
 				}
+				if (z - 1 < displayStates.Count)
+                {
+					StartCoroutine(AnimateDisablePosition(displayPositions[z - 1]));
+					StartCoroutine(AnimateDisableStates(displayStates[z - 1]));
+					kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.LightBuzzShort, transform);
+				}
 			}
-			yield return new WaitForSeconds(1f);
+			yield return new WaitForSeconds(1.5f);
 		}
 		while (displayText.text.Length > 0 || progressText.text.Length > 0)
 		{
@@ -467,25 +579,58 @@ public class Busybeaver : MonoBehaviour {
 		return num % mod;
 	}
 	#pragma warning disable 414
-		private readonly string TwitchHelpMessage = "Submit the binary sequence using \"!{0} submit 1101001010\" (In this example, set the binary to 1101001010, then presses the submit button.) To advance to the next stage, use \"!{0} advance/next\" (Only if there are insufficient unignored modules)";
+		private readonly string TwitchHelpMessage = "Submit the binary sequence using \"!{0} submit 1101001010\" (In this example, set the binary to 1101001010, then presses the submit button.) 'T'/'F' can be used for 1's and 0's instead. You may space out the binary digits in the command." +
+		"To advance to the next stage, use \"!{0} advance/next\" (Only if there are insufficient unignored modules) You may append a number to specify how many stages to press next on.";
 	#pragma warning restore 414
 	IEnumerator ProcessTwitchCommand(string command)
     {
-        Match subCmd = Regex.Match(command, @"^\s*submit\s+([01 ]){10}$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant),
-			advCmd = Regex.Match(command,@"^\s*(advance|next)$");
+		if (!interactable)
+        {
+			yield return "sendtochaterror The module cannot be interacted right now. Wait a bit until you can interact with this.";
+			yield break;
+		}
+        Match subCmd = Regex.Match(command, @"^\s*submit\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant),
+			advCmd = Regex.Match(command,@"^\s*(advance|next)(\s\d+)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         if (subCmd.Success)
-        {    
-            var Binary = subCmd.Groups[1].Value.ToList();
-			Debug.Log(Binary.Join(", "));
-            if(Binary.Count != 10)
-				yield return "sendtochaterror Incorrect Syntax. Must be exactly 10 digits.";
+        {
+			if (!inFinale)
+			{
+				yield return "sendtochaterror The module is not ready to submit. Advance all the stages first or solve enough modules to use this command.";
+				yield break;
+			}
+			var Binary = command.Trim().Substring(7).Trim().ToLower().Replace('t','1').Replace('f', '0').Split();
+			//Debug.Log(Binary.Join(", "));
+			List<bool> binaryStates = new List<bool>();
+			for (int x = 0; x < Binary.Length; x++)
+			{
+				foreach (char suggestedLetter in Binary[x])
+					switch (suggestedLetter)
+					{
+						case '0':
+							binaryStates.Add(false);
+							break;
+						case '1':
+							binaryStates.Add(true);
+							break;
+						default:
+							yield return string.Format("sendtochaterror I do not know what character \"{0}\" releates to in binary. Recheck your command.", Binary[x]);
+							yield break;
+					}
+			}
+			if (binaryStates.Count != 10)
+			{
+				yield return string.Format("sendtochaterror You provided {0} binary digits when I expected exactly 10. Recheck your command.",binaryStates.Count);
+				yield break;
+			}
             yield return null;  // acknowledge to TP that the command was valid
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < binaryStates.Count; i++)
             {
-                if(inputStates[i])
-                    Buttons[i].OnInteract();
-                yield return new WaitForSeconds(.1f);
+				if (inputStates[i] != binaryStates[i])
+				{
+					Buttons[i].OnInteract();
+					yield return new WaitForSeconds(.1f);
+				}
             }
             submitBtn.OnInteract();
         }
@@ -493,17 +638,47 @@ public class Busybeaver : MonoBehaviour {
         {
 			if (!inSpecial)
             {
-				yield return "sendtochaterror The module is not in its special phase. This command is not useful.";
+				yield return "sendtochaterror The module is not in its special phase. This command is useless when there are enough non-ignored modules.";
 				yield break;
 			}
-			yield return null;
-			submitBtn.OnInteract();
+			if (inFinale)
+            {
+				yield return "sendtochaterror The module is awaiting submission. Pressing just \"SUBMIT\" would definitely strike you from here.";
+				yield break;
+			}
+			string intereptedCommand = advCmd.Value.Substring(advCmd.Value.ToLower().StartsWith("next") ? 4 : 7);
+			if (string.IsNullOrEmpty(intereptedCommand))
+			{
+				yield return null;
+				submitBtn.OnInteract();
+			}
+			else
+            {
+				intereptedCommand = intereptedCommand.Trim();
+				int repeatTimes;
+				if (!int.TryParse(intereptedCommand, out repeatTimes) || repeatTimes <= 0)
+                {
+					yield return string.Format("sendtochaterror I do not know how to interact with a given button \"{0}\" times.", intereptedCommand);
+					yield break;
+				}
+				for (int x = 0; x < repeatTimes; x++)
+				{
+					if (!interactable)
+                    {
+						yield return string.Format("sendtochaterror The module stopped allowing inputs to process after \"{0}\" presses.", x);
+						yield break;
+					}
+					yield return null;
+					submitBtn.OnInteract();
+					yield return new WaitForSeconds(1f);
+				}
+			}
         }
     }
 	IEnumerator TwitchHandleForcedSolve()
     {
 		requestForceSolve = true;
-		if (inSpecial)
+		if (inSpecial && !inFinale)
         {
 			while (interactable)
             {
