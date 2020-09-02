@@ -1463,7 +1463,7 @@ Transform:
   m_GameObject: {fileID: 1345674724265398}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: -0}
-  m_LocalScale: {x: 1.1, y: 0.5, z: 1.5}
+  m_LocalScale: {x: 1.05, y: 0.5, z: 1.5}
   m_Children: []
   m_Father: {fileID: 4915970317423854}
   m_RootOrder: 2
@@ -1677,7 +1677,7 @@ Transform:
   m_GameObject: {fileID: 1110146361179292}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.52, z: -0}
-  m_LocalScale: {x: 0.29, y: 2, z: 1}
+  m_LocalScale: {x: 0.15, y: 2, z: 1}
   m_Children: []
   m_Father: {fileID: 4915970317423854}
   m_RootOrder: 0
@@ -1717,8 +1717,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1218082005008916}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.0165, z: 0.01}
-  m_LocalScale: {x: 0.055, y: 0.01, z: 0.01}
+  m_LocalPosition: {x: 0, y: 0.0165, z: 0.009}
+  m_LocalScale: {x: 0.125, y: 0.01, z: 0.0125}
   m_Children:
   - {fileID: 4873438357459886}
   - {fileID: 4465741535736734}
@@ -3344,7 +3344,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1110146361179292}
-  m_Text: INITIAL
+  m_Text: STAGE 00/10->
   m_OffsetZ: 0
   m_CharacterSize: 0.01
   m_LineSpacing: 1
@@ -3694,6 +3694,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: ba4f1c5a23d06a24698c4966526eac18, type: 2}
   - {fileID: 2100000, guid: 3230b6ef00aa6b148a7912c52c126406, type: 2}
   disableState: {fileID: 2100000, guid: b330ebf3342e1254eb895973ce15e5db, type: 2}
+  debugTape: 0
 --- !u!114 &114028705091467038
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4007,9 +4008,9 @@ MonoBehaviour:
   Parent: {fileID: 0}
   Children:
   - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 114531094792540082}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
@@ -4558,7 +4559,7 @@ MonoBehaviour:
   m_Script: {fileID: -706292897, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HighlightScale: {x: 1.1, y: 0.1, z: 1.5}
+  HighlightScale: {x: 1.05, y: 0.1, z: 1.5}
   OutlineAmount: 0
 --- !u!114 &114889923814894348
 MonoBehaviour:

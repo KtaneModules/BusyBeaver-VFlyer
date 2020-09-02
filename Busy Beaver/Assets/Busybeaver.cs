@@ -21,7 +21,7 @@ public class Busybeaver : MonoBehaviour {
 	public MeshRenderer[] bitsRenderer, positionRenderer;
 	public Material[] bitStates = new Material[2];
 	public Material disableState;
-	private const string Alphabet = "QWERTYUIOPASDFGHJKLZXCVBNM";
+	private const string alphabet = "QWERTYUIOPASDFGHJKLZXCVBNM", easyModeLetters = "ABCDEFGHIJKL";
 	private int stageNo, position, stagesGeneratable, cStage = -1;
 	private bool solved = false;
 
@@ -199,11 +199,29 @@ public class Busybeaver : MonoBehaviour {
 			}
 		}
     }
-
+	bool IsProvidedConditionTrueEasy(char letter)
+    {
+		switch (letter)
+		{// Note, positions are 0-indexed
+			case 'A': return !correctStates[position];
+			case 'B': return position <= 4;
+			case 'C': return correctStates[stageNo % 10];
+			case 'D': return correctStates[position] == correctStates[(position + 5) % 10];
+			case 'E': return correctStates[Mod(position - 1, 10)] == correctStates[(position + 1) % 10];
+			case 'F': return stageNo % 2 == 1;
+			case 'G': return stageNo % 2 == 0;
+			case 'H': return correctStates[Mod(position - 1, 10)] != correctStates[(position + 1) % 10];
+			case 'I': return correctStates[position] != correctStates[(position + 5) % 10];
+			case 'J': return correctStates[position];
+			case 'K': return position > 4;
+			case 'L': return correctStates[stageNo % 10];
+		}
+		return false;
+    }
 	bool IsProvidedConditionTrue(char letter)
     {
 		switch (letter)
-        {// Note, positions are 0-indexed however manual states it by 1st-10th positions
+        {// Note, positions are 0-indexed
 
 			case 'A': return !correctStates[position];
 			case 'B': return position <= 4;
@@ -239,12 +257,19 @@ public class Busybeaver : MonoBehaviour {
 
 	void GenerateAllStages()
     {
-        for (int x = 0; x < stagesGeneratable; x++)
-        {
-			assignLetters += Alphabet.PickRandom();
-			movementLetters += Alphabet.PickRandom();
-        }
-    }
+		if (inSpecial)
+			for (int x = 0; x < stagesGeneratable; x++)
+			{
+				assignLetters += alphabet.PickRandom();
+				movementLetters += alphabet.PickRandom();
+			}
+		else
+			for (int x = 0; x < stagesGeneratable; x++)
+			{
+				assignLetters += easyModeLetters.PickRandom();
+				movementLetters += easyModeLetters.PickRandom();
+			}
+	}
 	void ProcessAllStages()
     {
 		bool[] initialState = new bool[10];
@@ -267,11 +292,11 @@ public class Busybeaver : MonoBehaviour {
 			stageNo++;
 			Debug.LogFormat("[Busy Beaver #{0}]:-----------STAGE {1}-----------", _moduleId, stageNo);
 			Debug.LogFormat("[Busy Beaver #{0}]: Characters displayed in this stage: \"{1}{2}\"", _moduleId, assignLetters[x], movementLetters[x]);
-			bool stateModifer = IsProvidedConditionTrue(assignLetters[x]), moveLeft = IsProvidedConditionTrue(movementLetters[x]);
+			bool stateModifer = inSpecial ? IsProvidedConditionTrue(assignLetters[x]) : IsProvidedConditionTrueEasy(assignLetters[x]), moveLeft = inSpecial ? IsProvidedConditionTrue(movementLetters[x]) : IsProvidedConditionTrueEasy(movementLetters[x]);
 			Debug.LogFormat("[Busy Beaver #{0}]: The left character's condition returned {1}", _moduleId, stateModifer);
+			Debug.LogFormat("[Busy Beaver #{0}]: The right character's condition returned {1}", _moduleId, moveLeft);
 			correctStates[position] = stateModifer;
 			Debug.LogFormat("[Busy Beaver #{0}]: Current Tape: {1}", _moduleId, correctStates.Select(a => a ? "1" : "0").Join(""));
-			Debug.LogFormat("[Busy Beaver #{0}]: The right character's condition returned {1}", _moduleId, moveLeft);
 			position = Mod(position + (moveLeft ? -1 : 1), 10);
 			Debug.LogFormat("[Busy Beaver #{0}]: Current Pointer Position: {1}", _moduleId, position + 1);
 			if (stageNo <= Math.Min(5, Math.Min(assignLetters.Length, movementLetters.Length) / 2) || debugTape)
@@ -288,7 +313,7 @@ public class Busybeaver : MonoBehaviour {
 		if (cStage > 0)
 		{
 			displayText.text = string.Format("{0} {1}", assignLetters[cStage - 1], movementLetters[cStage - 1]);
-            progressText.text = inSpecial ? string.Format("NEXT({0})", stagesGeneratable - cStage) : cStage.ToString("0000000");
+            progressText.text = inSpecial ? string.Format("STAGE {0}/{1}->", cStage.ToString("00"),stagesGeneratable) : string.Format("STAGE {0}",cStage.ToString("0000000"));
 		}
 		else
         {
@@ -307,7 +332,7 @@ public class Busybeaver : MonoBehaviour {
 				{
 					positionRenderer[x].material = displayPositions[cStage] == x ? bitStates[1] : bitStates[0];
 				}
-			if (cStage > 0)
+			if (cStage > 0 && !requestForceSolve)
 			{
 				StartCoroutine(AnimateBlendToNextStatesVisible(displayStates[cStage - 1], displayStates[cStage]));
 				StartCoroutine(AnimateBlendToNextPos(displayPositions[cStage - 1], displayPositions[cStage]));
@@ -324,7 +349,7 @@ public class Busybeaver : MonoBehaviour {
 			{
 				positionRenderer[x].material = disableState;
 			}
-			if (cStage - 1 < displayStates.Count)
+			if (cStage - 1 < displayStates.Count && !requestForceSolve)
             {
 				StartCoroutine(AnimateDisableStates(displayStates[cStage - 1]));
 				StartCoroutine(AnimateDisablePosition(displayPositions[cStage - 1]));
@@ -420,7 +445,7 @@ public class Busybeaver : MonoBehaviour {
 			if (z > 0)
 			{
 				displayText.text = string.Format("{0} {1}", assignLetters[z - 1], movementLetters[z - 1]);
-				progressText.text = z.ToString("0000000");
+				progressText.text = string.Format("STAGE {0}", z.ToString("0000000"));
 			}
 			else
 			{
@@ -444,6 +469,7 @@ public class Busybeaver : MonoBehaviour {
 					StartCoroutine(AnimateBlendToNextPos(displayPositions[z - 1], displayPositions[z]));
 					StartCoroutine(AnimateBlendToNextStatesVisible(displayStates[z - 1], displayStates[z]));
 				}
+				yield return new WaitForSeconds(3f);
 			}
 			else
 			{
@@ -462,16 +488,16 @@ public class Busybeaver : MonoBehaviour {
 					StartCoroutine(AnimateDisableStates(displayStates[z - 1]));
 					kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.LightBuzzShort, transform);
 				}
+				yield return new WaitForSeconds(1.5f);
 			}
-			yield return new WaitForSeconds(1.5f);
 		}
 		while (displayText.text.Length > 0 || progressText.text.Length > 0)
 		{
 			if (!string.IsNullOrEmpty(displayText.text))
-				displayText.text = displayText.text.Substring(0, displayText.text.Length - 1);
+				displayText.text = displayText.text.Substring(0, displayText.text.Length - 1).Trim();
 			if (!string.IsNullOrEmpty(progressText.text))
-				progressText.text = progressText.text.Substring(0, progressText.text.Length - 1);
-			yield return new WaitForSeconds(.1f);
+				progressText.text = progressText.text.Substring(0, progressText.text.Length - 1).Trim();
+			yield return new WaitForSeconds(.05f);
 		}
 		for (int x = 0; x < positionRenderer.Length / 2; x++)
 		{
@@ -490,14 +516,22 @@ public class Busybeaver : MonoBehaviour {
 		string subText = "SUBMIT";
 		for (int x = subText.Length - 1; x >= 0; x--)
 		{
+			kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.TypewriterKey, transform);
 			progressText.text = subText.Substring(x);
 			yield return new WaitForSeconds(0.05f);
 		}
 		yield return null;
     }
-
+	string[] possibleDisarmTexts = {
+		"MODULE DONE",
+		"SOLVED",
+		"THERE WE GO",
+		"WELL DONE",
+		""
+	};
 	IEnumerator AnimateDisarmState()
 	{
+		string selectedText = possibleDisarmTexts.PickRandom();
 		displayText.text = "";
 		float[] delayTimes = { 0.8f, 0.1f, 0.6f, 0.1f, 0.4f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f };
 		kmAudio.PlaySoundAtTransform("321107__nsstudios__robot-or-machine-destroy", transform);
@@ -509,7 +543,7 @@ public class Busybeaver : MonoBehaviour {
 				colorblindText[y].text = x % 2 == 1 ? "" : inputStates[y] ? "1" : "0";
 				colorblindText[y].color = inputStates[y] ? Color.black : Color.white;
 			}
-			progressText.text = x % 2 == 1 ? "" : "SOLVED";
+			progressText.text = x % 2 == 1 ? "" : selectedText;
 			yield return new WaitForSeconds(delayTimes[x]);
 		}
 	}
@@ -518,10 +552,10 @@ public class Busybeaver : MonoBehaviour {
 		while (displayText.text.Length > 0 || progressText.text.Length > 0)
         {
 			if (!string.IsNullOrEmpty(displayText.text))
-				displayText.text = displayText.text.Substring(0, displayText.text.Length - 1);
+				displayText.text = displayText.text.Substring(0, displayText.text.Length - 1).Trim();
 			if (!string.IsNullOrEmpty(progressText.text))
-				progressText.text = progressText.text.Substring(0, progressText.text.Length - 1);
-			yield return new WaitForSeconds(.1f);
+				progressText.text = progressText.text.Substring(0, progressText.text.Length - 1).Trim();
+			yield return new WaitForSeconds(.05f);
 		}
 
 		for (int x = 0; x < positionRenderer.Length / 2; x++)
@@ -541,6 +575,7 @@ public class Busybeaver : MonoBehaviour {
 		string subText = "SUBMIT";
         for (int x = subText.Length - 1; x >= 0; x--)
         {
+			kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.TypewriterKey, transform);
 			progressText.text = subText.Substring(x);
 			yield return new WaitForSeconds(0.05f);
 		}
