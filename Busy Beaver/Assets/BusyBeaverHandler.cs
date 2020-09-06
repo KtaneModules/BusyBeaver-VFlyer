@@ -5,9 +5,8 @@ using System.Linq;
 using System;
 using System.Text.RegularExpressions;
 using Rnd = UnityEngine.Random;
-using Newtonsoft.Json;
 
-public class Busybeaver : MonoBehaviour {
+public class BusyBeaverHandler : MonoBehaviour {
 	
 	public KMAudio kmAudio;
     public KMBombModule Module;
@@ -234,7 +233,7 @@ public class Busybeaver : MonoBehaviour {
 			case 'I': return !correctStates[(stageNo + position + (correctStates[position] ? 2 : 1)) % 10];
 			case 'J': return (stageNo - (position + 1) + 10) % 2 == 1;
 			case 'K': return ((correctStates[position] ? 1 : 0) + position + 1) % 2 == 0;
-			case 'L': return (stageNo - (position + 1 + (correctStates[position] ? 1 : 0))) % 2 == 1;
+			case 'L': return (stageNo - (position + 1 + (correctStates[position] ? 1 : 0)) + 10) % 2 == 1;
 			case 'M': return !correctStates[(stageNo + position + (correctStates[position] ? 6 : 5)) % 10];
 
 			case 'N': return correctStates[position];
@@ -248,7 +247,7 @@ public class Busybeaver : MonoBehaviour {
 			case 'V': return correctStates[(stageNo + position + (correctStates[position] ? 2 : 1)) % 10];
 			case 'W': return (stageNo - (position + 1) + 10) % 2 == 0;
 			case 'X': return ((correctStates[position] ? 1 : 0) + position + 1) % 2 == 1;
-			case 'Y': return (stageNo - (position + 1 + (correctStates[position] ? 1 : 0))) % 2 == 0;
+			case 'Y': return (stageNo - (position + 1 + (correctStates[position] ? 1 : 0)) + 10) % 2 == 0;
 			case 'Z': return correctStates[(stageNo + position + (correctStates[position] ? 6 : 5)) % 10];
 
 		}
@@ -266,9 +265,18 @@ public class Busybeaver : MonoBehaviour {
 		else
 			for (int x = 0; x < stagesGeneratable; x++)
 			{
-				assignLetters += easyModeLetters.PickRandom();
-				movementLetters += easyModeLetters.PickRandom();
-			}
+                if (Rnd.value < 0.5f)
+                {
+                    char selectedLetter = easyModeLetters.PickRandom();
+                    assignLetters += selectedLetter;
+                    movementLetters += selectedLetter;
+                }
+                else
+                {
+                    assignLetters += easyModeLetters.PickRandom();
+                    movementLetters += easyModeLetters.PickRandom();
+                }
+            }
 	}
 	void ProcessAllStages()
     {
