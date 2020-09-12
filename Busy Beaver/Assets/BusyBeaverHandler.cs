@@ -535,7 +535,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 		"SOLVED",
 		"THERE WE GO",
 		"WELL DONE",
-		""
+		"YOU DID IT"
 	};
 	IEnumerator AnimateDisarmState()
 	{
@@ -563,7 +563,8 @@ public class BusyBeaverHandler : MonoBehaviour {
 				displayText.text = displayText.text.Substring(0, displayText.text.Length - 1).Trim();
 			if (!string.IsNullOrEmpty(progressText.text))
 				progressText.text = progressText.text.Substring(0, progressText.text.Length - 1).Trim();
-			yield return new WaitForSeconds(.05f);
+			kmAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.TypewriterKey, transform);
+			yield return new WaitForSeconds(.025f);
 		}
 
 		for (int x = 0; x < positionRenderer.Length / 2; x++)
