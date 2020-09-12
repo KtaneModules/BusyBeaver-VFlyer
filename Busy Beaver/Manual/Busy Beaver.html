@@ -40,7 +40,7 @@
             </div>
             <div class="page-content">
                 <h3>Modifying The Tape</h3>
-                <p>For each stage, the first letter in the two-character display corresponds to the value to make the current digit, and the second letter in the two-character display corresponds which way to move. Both conditions read from the tape first before modifying the tape and pointer. Tiles are 0-indexed from left to right, with the first tile having an index of 0. "%" refers to the modulo operator.</p>
+                <p>For each stage, the first letter in the two-character display corresponds to the value to make the current digit, and the second letter in the two-character display corresponds which way to move. The order of how this module process is the following: Read the letter conditions first for the current tape, modify the value on the tape based on left letter's condition, and then move the pointer based on right letter's condition. Tiles are 0-indexed from left to right, with the first tile having an index of 0. "%" refers to the modulo operator.</p>
                 <p>If the condition for the first letter returns true, make the selected digit a 1, or a 0 otherwise. Likewise, if the condition for the second letter returns true, move the pointer to the left, otherwise, move the pointer to the right. The tape wraps around.</p>
                 <ul>
                     <li>'I' refers to the value of the currently selected tile.</li>

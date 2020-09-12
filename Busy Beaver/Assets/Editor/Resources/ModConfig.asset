@@ -37,4 +37,4 @@ MonoBehaviour:
 '
   version: 1.0_01
   outputFolder: build
-  previewImage: {fileID: 2800000, guid: 37bcb000c77b3c8498158a2debb5135c, type: 3}
+  previewImage: {fileID: 2800000, guid: dbeaa1185d00c394394b0be65c1b7715, type: 3}
