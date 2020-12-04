@@ -35,6 +35,6 @@ MonoBehaviour:
     Manual: https://ktane.timwi.de/HTML/Busy%20Beaver.html
 
 '
-  version: 1.0_01
+  version: 1.0_02
   outputFolder: build
   previewImage: {fileID: 2800000, guid: dbeaa1185d00c394394b0be65c1b7715, type: 3}
