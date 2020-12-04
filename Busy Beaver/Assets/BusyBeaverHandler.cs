@@ -74,7 +74,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 	void Awake () {
 		_moduleId = _moduleIdCounter++;
 	    string[] ignoreRepo = Boss.GetIgnoredModules(Module, ignoredModules);
-        if (ignoreRepo != null)
+        if (ignoreRepo != null && ignoreRepo.Any())
             ignoredModules = ignoreRepo;
 	}
 	// Use this for initialization
@@ -213,7 +213,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 			case 'I': return correctStates[position] != correctStates[(position + 5) % 10];
 			case 'J': return correctStates[position];
 			case 'K': return position > 4;
-			case 'L': return correctStates[stageNo % 10];
+			case 'L': return !correctStates[stageNo % 10];
 		}
 		return false;
     }
@@ -616,11 +616,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 			}
 	}
 	private int Mod(int num, int mod) {
-        while (num < 0)
-        {
-			num += mod;
-        }
-		return num % mod;
+		return ((num % mod) + mod) % mod;
 	}
 	#pragma warning disable 414
 		private readonly string TwitchHelpMessage = "Submit the binary sequence using \"!{0} submit 1101001010\" (In this example, set the binary to 1101001010, then presses the submit button.) 'T'/'F' can be used for 1's and 0's instead. You may space out the binary digits in the command." +
@@ -677,6 +673,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 				}
             }
             submitBtn.OnInteract();
+			yield break;
         }
 		else if (advCmd.Success)
         {
