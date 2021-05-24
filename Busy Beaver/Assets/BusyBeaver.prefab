@@ -881,8 +881,9 @@ GameObject:
   - component: {fileID: 114115199152023842}
   - component: {fileID: 114299807288659408}
   - component: {fileID: 114358939590949828}
-  - component: {fileID: 114017445545997358}
   - component: {fileID: 114699794914648828}
+  - component: {fileID: 114169156077666214}
+  - component: {fileID: 114017445545997358}
   m_Layer: 0
   m_Name: BusyBeaver
   m_TagString: Untagged
@@ -3643,6 +3644,7 @@ MonoBehaviour:
   Module: {fileID: 114299807288659408}
   Boss: {fileID: 114699794914648828}
   Bomb: {fileID: 114115199152023842}
+  modSettings: {fileID: 114169156077666214}
   colorblindText:
   - {fileID: 102690069224608940}
   - {fileID: 102331965919803076}
@@ -3832,6 +3834,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - KT/Mobile/DiffuseTint
+--- !u!114 &114169156077666214
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1860329324060172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -289456416, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Settings: '{ "legacyMode": false, "enforceExhibitionMode": false }'
+  SettingsPath: 
 --- !u!114 &114181154698069518
 MonoBehaviour:
   m_ObjectHideFlags: 1
