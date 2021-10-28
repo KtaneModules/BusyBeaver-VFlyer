@@ -36,7 +36,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 	private string assignLetters = "", movementLetters = "";
 	private bool inFinale = false, inSpecial = false, hasStarted = false, interactable = true, requestForceSolve = false, enableLegacy = false, exhibitionMode = false;
 
-	private string[] ignoredModules = {
+	private string[] ignoredModules = { // Default ignore list, if it is unable to fetch ignored modules.
 		"Busy Beaver",
 		"OmegaForget",
 		"14",
