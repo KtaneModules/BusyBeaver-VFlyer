@@ -734,7 +734,7 @@ public class BusyBeaverHandler : MonoBehaviour {
     {
 		// Override settings via mission description.
 		var missionDescription = Game.Mission.Description ?? "";
-		var keywords = new[] { "Legacy", "Exhibition", "Normal", "Boss" };
+		var keywords = new[] { "Legacy", "Exhibition", "Normal", "Boss", "Modern" };
         var regexOverrideDesc = Regex.Match(missionDescription, string.Format(@"[BusyBeaver](\s({0}))+", keywords.Join("|")));
 		if (regexOverrideDesc.Success)
         {
@@ -748,6 +748,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 						enableLegacy = true;
 						disableTPToggleBeaver = true;
 						break;
+					case "Modern":
 					case "Normal":
 						enableLegacy = false;
 						disableTPToggleBeaver = true;
@@ -821,7 +822,9 @@ public class BusyBeaverHandler : MonoBehaviour {
 		displayPositions.Clear();
 		displayStates.Clear();
 		stageNo = 0;
-		ActivateModule();
+		cStage = -1;
+		ActivateModule();		
+		//DisplayCurrentStage();
 		interactable = true;
 		yield break;
     }
