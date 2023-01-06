@@ -817,6 +817,7 @@ public class BusyBeaverHandler : MonoBehaviour {
 			yield return new WaitForSeconds(0.05f);
 		}
 		enableLegacy ^= true;
+		hasStarted = false;
 		assignLetters = "";
 		movementLetters = "";
 		displayPositions.Clear();
